@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File List</title>
+    <script>
+        async function loadFileList() {
+            const response = await fetch('/api/files/file-list');
+            const files = await response.json();
+            const tableBody = document.getElementById('file-list-body');
+            tableBody.innerHTML = ''; // Clear the table
+
+            files.forEach(file => {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                const downloadIcon = document.createElement('span');
+                downloadIcon.innerHTML = '📥'; // Download icon
+                downloadIcon.style.cursor = 'pointer'; // Make it look clickable
+                downloadIcon.onclick = () => downloadFile(file);
+                cell.innerText = file; // Add the filename
+                cell.appendChild(downloadIcon);
+                row.appendChild(cell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        async function downloadFile(filename) {
+            // Updated the fetch call to use the new GET endpoint with a query parameter
+            const response = await fetch(`/download?filename=${encodeURIComponent(filename)}`);
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename; // Set the file name for the download
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url); // Clean up the URL object
+            } else {
+                alert('File not found');
+            }
+        }
+
+        window.onload = loadFileList; // Load file list when the page loads
+    </script>
+</head>
+<body>
+    <h1>File List</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+            </tr>
+        </thead>
+        <tbody id="file-list-body">
+            <!-- File list will be populated here -->
+        </tbody>
+    </table>
+</body>
+</html>
