@@ -2,6 +2,7 @@ package com.fdu.msacs.dfsclient.dfsclient;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,8 +35,8 @@ public class FileClientService {
     private String fileSystemServerUrl;
     @Value("${download.dir}")
     private String downloadRoot; // Will be injected from application.properties
-
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Autowired
+    private RestTemplate restTemplate;
 
     public String uploadFileToServer(MultipartFile file) {
         String url = fileSystemServerUrl + "/dfs/upload";
@@ -55,7 +56,7 @@ public class FileClientService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-            logger.info("uploadFileToServer - url: {}", url);
+            logger.info("uploadFile {} ToServer - url: {}", fileResource.getFilename(), url);
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
             ResponseEntity<String> response = restTemplate.postForEntity(url, requestEntity, String.class);
