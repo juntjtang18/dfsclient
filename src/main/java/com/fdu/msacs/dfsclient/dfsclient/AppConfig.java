@@ -10,7 +10,6 @@ public class AppConfig {
 	@Bean
 	public RestTemplate restTemplate() {
 	    RestTemplate restTemplate = new RestTemplate();
-	    // You might need to customize the message converters based on your requirements
 	    restTemplate.getMessageConverters().add(new ByteArrayHttpMessageConverter());
 	    return restTemplate;
 	}
