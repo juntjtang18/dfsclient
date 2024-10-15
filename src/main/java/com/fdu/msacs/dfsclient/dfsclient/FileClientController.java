@@ -10,6 +10,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 @Controller
 public class FileClientController {
@@ -64,5 +68,54 @@ public class FileClientController {
     public ResponseEntity<List<String>> getFileList() {
         List<String> fileList = fileClientService.getFileListFromServer();
         return ResponseEntity.ok(fileList);
+    }
+
+    // Inner class to represent the request for upload
+    public static class RequestUpload {
+        private String uuid; // UUID of the request
+        private String filename; // Filename to upload
+
+        public RequestUpload() {
+        }
+
+        public RequestUpload(String uuid, String filename) {
+            this.uuid = uuid;
+            this.filename = filename;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+    }
+
+    // Inner class to represent the response for file check
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class UploadResponse {
+        private boolean exists; // Flag indicating whether the file exists
+        private String nodeUrl; // URL of the selected node
+        
+        public UploadResponse() {
+        	this.exists = false;
+        	this.nodeUrl = "";
+        }
+
+        // Constructor with @JsonCreator for Jackson
+        @JsonCreator
+        public UploadResponse(@JsonProperty("exists") boolean exists, @JsonProperty("nodeUrl") String nodeUrl) {
+            this.exists = exists;
+            this.nodeUrl = nodeUrl;
+        }
+
+        public boolean isExists() {
+            return exists;
+        }
+
+        public String getNodeUrl() {
+            return nodeUrl;
+        }
     }
 }
