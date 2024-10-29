@@ -1,4 +1,4 @@
-package com.fdu.msacs.dfsclient.dfsclient;
+package com.infolink.dfs.client;
 
 import java.util.List;
 

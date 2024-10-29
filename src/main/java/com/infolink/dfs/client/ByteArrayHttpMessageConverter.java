@@ -1,4 +1,4 @@
-package com.fdu.msacs.dfsclient.dfsclient;
+package com.infolink.dfs.client;
 
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;

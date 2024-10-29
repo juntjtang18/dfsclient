@@ -1,4 +1,4 @@
-package com.fdu.msacs.dfsclient.dfsclient;
+package com.infolink.dfs.client;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

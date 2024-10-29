@@ -1,4 +1,4 @@
-package com.fdu.msacs.dfsclient.dfsclient;
+package com.infolink.dfs.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,8 +14,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fdu.msacs.dfsclient.dfsclient.FileClientController.RequestUpload;
-import com.fdu.msacs.dfsclient.dfsclient.FileClientController.UploadResponse;
+import com.infolink.dfs.client.FileClientController.RequestUpload;
+import com.infolink.dfs.client.FileClientController.UploadResponse;
 
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
