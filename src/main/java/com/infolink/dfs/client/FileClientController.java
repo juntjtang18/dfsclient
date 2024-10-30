@@ -7,12 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.infolink.dfs.shared.DfsFile;
 
 
 @Controller
@@ -57,17 +59,11 @@ public class FileClientController {
         }
     }
 
-    // New endpoint for file list
     @GetMapping("/file-list")
-    public String fileListPage() {
-        return "file-list"; // returns file-list.html
-    }
-
-    @GetMapping("/api/files/file-list")
-    @ResponseBody
-    public ResponseEntity<List<String>> getFileList() {
-        List<String> fileList = fileClientService.getFileListFromServer();
-        return ResponseEntity.ok(fileList);
+    public String getFileList(Model model) {
+        List<DfsFile> files = fileClientService.getFileListFromServer("/upload");
+        model.addAttribute("files", files);
+        return "file-list";
     }
 
     // Inner class to represent the request for upload

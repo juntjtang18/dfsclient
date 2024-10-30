@@ -1,62 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File List</title>
-    <script>
-        async function loadFileList() {
-            const response = await fetch('/api/files/file-list');
-            const files = await response.json();
-            const tableBody = document.getElementById('file-list-body');
-            tableBody.innerHTML = ''; // Clear the table
-
-            files.forEach(file => {
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                const downloadIcon = document.createElement('span');
-                downloadIcon.innerHTML = '📥'; // Download icon
-                downloadIcon.style.cursor = 'pointer'; // Make it look clickable
-                downloadIcon.onclick = () => downloadFile(file);
-                cell.innerText = file; // Add the filename
-                cell.appendChild(downloadIcon);
-                row.appendChild(cell);
-                tableBody.appendChild(row);
-            });
-        }
-
-        async function downloadFile(filename) {
-            // Updated the fetch call to use the new GET endpoint with a query parameter
-            const response = await fetch(`/download?filename=${encodeURIComponent(filename)}`);
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = filename; // Set the file name for the download
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url); // Clean up the URL object
-            } else {
-                alert('File not found');
-            }
-        }
-
-        window.onload = loadFileList; // Load file list when the page loads
-    </script>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Font Awesome CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <h1>File List</h1>
-    <table>
-        <thead>
-            <tr>
-                <th>Filename</th>
-            </tr>
-        </thead>
-        <tbody id="file-list-body">
-            <!-- File list will be populated here -->
-        </tbody>
-    </table>
+    <div class="container my-4">
+        <h1 class="text-center mb-4">File List</h1>
+        <ul class="list-group">
+            <li class="list-group-item d-flex justify-content-between align-items-center" th:each="file : ${files}">
+                <!-- File Icon and Name -->
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-file-alt fa-lg mr-2 text-primary"></i>
+                    <span th:text="${file.name}">File Name</span>
+                </div>
+                
+                <!-- Size and Last Modified Date -->
+                <div class="d-flex flex-column text-right">
+                    <span th:text="${file.size} + ' bytes'">Size</span>
+                    <small th:text="${#dates.format(file.lastModifiedTime, 'yyyy-MM-dd HH:mm:ss')}">Last Modified</small>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Bootstrap and jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

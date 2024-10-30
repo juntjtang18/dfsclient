@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.infolink.dfs.client.FileClientController.RequestUpload;
 import com.infolink.dfs.client.FileClientController.UploadResponse;
+import com.infolink.dfs.shared.DfsFile;
 
 import jakarta.annotation.PostConstruct;
 
@@ -29,6 +30,7 @@ import org.springframework.core.io.ByteArrayResource;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +55,10 @@ public class FileClientService {
         String targetDir = "/upload";
         String uploadUrl = getUploadUrl(file.getOriginalFilename(), targetDir);
         logger.info("Upload URL: {}", uploadUrl); // Debugging log
-
+        
+        if (uploadUrl.equals("File already exists at the given location.")) {
+        	return "File already exists at the given location.";
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
@@ -163,10 +168,29 @@ public class FileClientService {
     }
 
 
-    public List<String> getFileListFromServer() {
-        String url = "http://localhost:8080/dfs/file-list"; // Adjust according to your server API
-        ResponseEntity<List> response = restTemplate.exchange(url, HttpMethod.GET, null, List.class);
-        return response.getBody();
+    public List<DfsFile> getFileListFromServer(String directory) {
+        String url = metaNodeUrl + "/metadata/file/list"; // Adjusted to match the metanode endpoint
+
+        // Creating a RequestDirectory object with the specified directory
+        RequestDirectory requestDirectory = new RequestDirectory(directory);
+        HttpEntity<RequestDirectory> requestEntity = new HttpEntity<>(requestDirectory);
+
+        try {
+            ResponseEntity<DfsFile[]> response = restTemplate.exchange(
+                url, HttpMethod.POST, requestEntity, DfsFile[].class
+            );
+
+            // Check for success and return the body
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return Arrays.asList(response.getBody());
+            } else {
+                logger.error("Failed to fetch file list from server. Status: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to fetch file list from server.");
+            }
+        } catch (RestClientException e) {
+            logger.error("Exception while fetching file list from server: {}", e.getMessage());
+            throw new RuntimeException("Error occurred while retrieving file list.", e);
+        }
     }
 
     public void downloadFileFromServer(String fileName) {
@@ -210,8 +234,7 @@ public class FileClientService {
         private String targetDir;
         private String owner;
         
-        public RequestUpload() {
-        }
+        public RequestUpload() {}
 
         public RequestUpload(String uuid, String filename, String targetDir, String owner) {
             this.uuid = uuid;
@@ -246,13 +269,25 @@ public class FileClientService {
             this.nodeUrl = nodeUrl;
         }
 
-        public boolean isExists() {
-            return exists;
+        public boolean isExists() {            return exists;        }
+        public String getNodeUrl() {            return nodeUrl;        }
+    }
+    /**
+     * Inner class to represent a request containing the directory.
+     */
+    public static class RequestDirectory {
+        private String directory;
+        private String owner;
+        public RequestDirectory() {}
+        public RequestDirectory(String dir) {
+        	this.directory = dir;
+        	this.owner = System.getProperty("user.name");
         }
-
-        public String getNodeUrl() {
-            return nodeUrl;
-        }
+        // Getters and Setters
+        public String getDirectory() 				{            return directory;        }
+        public void setDirectory(String directory) 	{            this.directory = directory;        }
+		public String getOwner() 					{			return owner;		}
+		public void setOwner(String owner) 			{			this.owner = owner;		}
     }
 
 }
