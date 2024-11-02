@@ -40,7 +40,9 @@ public class FileClientController {
     // Upload a file via the client
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) {
-        String response = fileClientService.uploadFileToServer(file);
+    	String username = System.getProperty("user.name");
+    	
+        String response = fileClientService.uploadFileToServer(username, file, "/");
         return ResponseEntity.ok(response);
     }
 
@@ -65,7 +67,26 @@ public class FileClientController {
         model.addAttribute("files", files);
         return "file-list";
     }
+    
+    @GetMapping("/upload-directory")
+    public String uploadDirectoryPage() {
+        return "upload-directory"; // returns upload-directory.html
+    }
 
+    @PostMapping("/upload-directory")
+    public ResponseEntity<String> uploadDirectory(@RequestParam("directory") String directoryPath, @RequestParam("targetDfsDir") String targetDfsDir) {
+        try {
+            String username = System.getProperty("user.name");
+            fileClientService.uploadFilesFromDirectory(username, directoryPath, targetDfsDir);
+            return ResponseEntity.ok("All files uploaded successfully from: " + directoryPath + " to " + targetDfsDir);
+        } catch (Exception e) {
+            logger.error("Error uploading directory: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                                 .body("Failed to upload directory: " + e.getMessage());
+        }
+    }
+
+    
     // Inner class to represent the request for upload
     public static class RequestUpload {
         private String uuid; // UUID of the request

@@ -18,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.infolink.dfs.client.FileClientController.RequestUpload;
+import com.infolink.dfs.client.FileClientController.UploadResponse;
 import com.infolink.dfs.shared.DfsFile;
 
 import jakarta.annotation.PostConstruct;
@@ -26,14 +28,18 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
-public class FileClientService {
+public class FileClientService2 {
     private static final Logger logger = LoggerFactory.getLogger(FileClientService2.class);
 
     @Value("${download.dir}")
@@ -69,52 +75,16 @@ public class FileClientService {
                     uploadFilesRecursively(username, file, targetDfsDir); // Recur into the directory
                 } else {
                     // Use CustomMultipartFile directly
-                    
+                    CustomMultipartFile multipartFile = new CustomMultipartFile(file);
                     logger.debug("upload file: {}", file.getName());
                     try {
-                        String ret = uploadFileSystemResourceToServer(username, file, targetDfsDir);
+                        String ret = uploadFileToServer(username, multipartFile, targetDfsDir);
                         logger.debug("uploadFileToServer(...) returns: {}", ret);
                     } catch (Exception e) {
                         logger.error("Error uploading file {}: {}", file.getAbsolutePath(), e.getMessage());
                     }
                 }
             }
-        }
-    }
-    
-    public String uploadFileSystemResourceToServer(String username, File file, String targetDfsDir) {
-        String uploadUrl = getUploadUrl(file.getAbsolutePath(), targetDfsDir);
-        logger.info("Upload URL: {}", uploadUrl);
-
-        if (uploadUrl.equals("File already exists at the given location.")) {
-            return "File already exists at the given location.";
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        // Prepare request body with file and parameters
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        FileSystemResource fileResource = new FileSystemResource(file);
-        body.add("file", fileResource);
-        body.add("user", username);
-        body.add("targetDir", targetDfsDir);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-
-        try {
-            // Call the upload endpoint
-            ResponseEntity<String> response = restTemplate.exchange(
-                uploadUrl,
-                HttpMethod.POST,
-                requestEntity,
-                String.class
-            );
-
-            return response.getBody();
-        } catch (Exception e) {
-            logger.error("Error during file upload: {}", e.getMessage());
-            throw new RuntimeException("File upload failed due to an error: " + e.getMessage());
         }
     }
     
